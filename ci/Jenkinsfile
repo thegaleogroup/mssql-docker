@@ -61,22 +61,24 @@ pipeline {
             }
         }
     }
-
     post {
         success {
             script {
                 if (currentBuild?.getPreviousBuild()?.result == 'FAILURE') {
-                    withCredentials([string(credentialsId: "${GCHAT_CREDENTIALS_ID}", variable: 'GCHAT_WEBHOOK' )]) {
-                        googlechatnotification url: "$GCHAT_WEBHOOK", message: "*Build Recovered And Passed*\n${env.JOB_NAME} [${env.BUILD_NUMBER}]\n- Build: ${env.BUILD_URL}\n- Git Commit: ${GIT_REPO_URL}/commit/${env.GIT_COMMIT}\n- Git Branch: ${GIT_REPO_URL}/tree/${env.GIT_BRANCH}"
+                    withCredentials([string(credentialsId: "${MSTEAM_CREDENTIALS_ID}", variable: "WEBHOOK")]) {
+                        office365ConnectorSend webhookUrl: "$WEBHOOK",
+                        message: "*Build Recovered And Passed*<br>${env.JOB_NAME} [${env.BUILD_NUMBER}]<br>- Build: ${env.BUILD_URL}<br>- Git Commit: ${GIT_REPO_URL}/commit/${env.GIT_COMMIT}<br>- Git Branch: ${GIT_REPO_URL}/tree/${env.GIT_BRANCH}",
+                        status: "Success"
                     }
                 }
             }
         }
         failure {
-            withCredentials([string(credentialsId: "${GCHAT_CREDENTIALS_ID}", variable: 'GCHAT_WEBHOOK' )]) {
-                googlechatnotification url: "$GCHAT_WEBHOOK", message: "*Build Failed*\n${env.JOB_NAME} [${env.BUILD_NUMBER}]\n- Build: ${env.BUILD_URL}\n- Git Commit: ${GIT_REPO_URL}/commit/${env.GIT_COMMIT}\n- Git Branch: ${GIT_REPO_URL}/tree/${env.GIT_BRANCH}"
+            withCredentials([string(credentialsId: "${MSTEAM_CREDENTIALS_ID}", variable: "WEBHOOK")]) {
+                office365ConnectorSend webhookUrl: "$WEBHOOK",
+                message: "*Build Failed*<br>${env.JOB_NAME} [${env.BUILD_NUMBER}]<br>- Build: ${env.BUILD_URL}<br>- Git Commit: ${GIT_REPO_URL}/commit/${env.GIT_COMMIT}<br>- Git Branch: ${GIT_REPO_URL}/tree/${env.GIT_BRANCH}",
+                status: "Failure"
             }
         }
     }
-
 }
